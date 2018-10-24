@@ -22,7 +22,8 @@ spec:
         track: canary
     spec:
       containers:
-      - image: gcr.io/kuar-demo/kuard-amd64:2
+      - image: eu.gcr.io/mab-testing/kuard/kuard-amd64:1
+        imagePullPolicy: Always
         name: kuard
         resources:
           requests:
