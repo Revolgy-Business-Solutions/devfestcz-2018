@@ -46,7 +46,7 @@ class App extends React.Component {
         <div className="title">
           <div className="alert alert-danger" role="alert">
             <svg className="icon icon-notification"><use xlinkHref="#icon-notification"></use></svg> { " " }
-            <b>WARNING:</b> This server may expose sensitive and secret information. Be careful.
+            <b>WARNING:</b> Hello DevFest!
           </div>
           <Disconnected ref={el => this.disconnected = el}/>
           <h2><samp>{this.props.page.hostname}</samp></h2>
