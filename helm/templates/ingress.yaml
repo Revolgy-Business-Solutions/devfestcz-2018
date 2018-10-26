@@ -11,8 +11,8 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   rules:
-{{ if .Values.urlPrefix }}
-    - host: kuard-{{ .Values.urlPrefix }}.marekbartik.com
+{{ if ! .Values.namespace eq "default" }}
+    - host: kuard-{{ .Values.namespace }}.marekbartik.com
       http:
         paths:
           - backend:
@@ -37,8 +37,8 @@ spec:
 {{ end }}
   tls:
     - hosts:
-{{ if .Values.urlPrefix }}
-        - "kuard-{{ .Values.urlPrefix }}.marekbartik.com"
+{{ if ! .Values.namespace eq "default" }}
+        - "kuard-{{ .Values.namespace }}.marekbartik.com"
 {{ else }}
         - "kuard.marekbartik.com"
         - "kuard-canary.marekbartik.com"
