@@ -25,6 +25,9 @@ spec:
       - image: eu.gcr.io/mab-testing/kuard/kuard-amd64:2
         imagePullPolicy: Always
         name: kuard
+        env:
+        - name: "devfest"
+          value: "2018"
         resources:
           requests:
             cpu: "50m"
