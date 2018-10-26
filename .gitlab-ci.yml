@@ -11,8 +11,11 @@ variables:
   DOCKER_DRIVER: overlay2
   DOCKER_HOST: tcp://docker:2375/
   CLOUD_PROJECT: mab-testing
+  PROJECT_NAME: kuard
+  APP_NAME: kuard
   CLUSTER_NAME: devfest
   CLUSTER_ZONE: europe-west3-c
+  IMAGE_REPO: eu.gcr.io/${CLOUD_PROJECT}/${PROJECT_NAME}/${APP_NAME}
 
 services:
   - docker:dind
@@ -39,6 +42,13 @@ build-image:
     # Write our GCP service account private key into a file.
     - echo "$GCLOUD_SERVICE_KEY" | base64 -d > ./gcloud-service-key.json
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
-    - docker build --pull --cache-from $CI_REGISTRY_IMAGE:latest -f  pipeline-builder/Dockerfile -t $CI_REGISTRY_IMAGE:$CI_BUILD_REF -t $CI_REGISTRY_IMAGE:latest .
-    - docker push $CI_REGISTRY_IMAGE
+    - docker build --pull --cache-from $IMAGE_REPO:latest -t $IMAGE_REPO:$CI_BUILD_REF .
+    - docker push $IMAGE_REPO:latest 
+    - docker push $IMAGE_REPO:$CI_BUILD_REF
 
+deploy-manifests:
+  stage: deploy
+  only:
+    - master
+  script:
+    - kubectl apply -f k8s/
