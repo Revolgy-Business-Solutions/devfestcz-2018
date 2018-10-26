@@ -23,7 +23,7 @@ build-make:
     - apk add --update alpine-sdk
   script:
     - cd kuard
-    - time make build-1 
+    - time make build 
 
 test:
   stage: test
