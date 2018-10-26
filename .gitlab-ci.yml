@@ -39,13 +39,7 @@ test:
     - echo "all ok"
     
 build-n-publish-image:
-  before_script:
-   - apk add --update make ca-certificates openssl python curl bash tree git jq update-ca-certificates
-   - | 
-      cd / && wget https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz && \
-      tar zxvf google-cloud-sdk.tar.gz && \
-      ./google-cloud-sdk/install.sh --usage-reporting=false --path-update=true
-
+  image: $CI_REGISTRY_IMAGE:latest
   stage: push-artifacts
   only:
     - master
@@ -63,3 +57,13 @@ deploy-manifests:
     - master
   script:
     - kubectl apply -f k8s/
+
+builder-image:
+  stage: build
+  when: manual
+  script: 
+    - echo "$GCLOUD_SERVICE_KEY" | base64 -d > ./gcloud-service-key.json
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+    - docker build --pull --cache-from $CI_REGISTRY_IMAGE:latest -f  pipeline-builder/Dockerfile -t $CI_REGISTRY_IMAGE:$CI_BUILD_REF -t $CI_REGISTRY_IMAGE:latest .
+    - docker push $CI_REGISTRY_IMAGE
+
