@@ -70,6 +70,7 @@ deploy-canary:
 
 destroy-canary:
   stage: deploy-canary
+  when: manual
   only:
     - master
   <<: *builder_setup
@@ -78,6 +79,7 @@ destroy-canary:
 
 deploy-prod:
   stage: deploy-prod
+  when: manual
   only:
     - master
   <<: *builder_setup
