@@ -30,7 +30,12 @@ services:
     - gcloud auth activate-service-account --key-file /gcloud-service-key.json 
     - gcloud auth configure-docker
     - gcloud container clusters get-credentials "$CLUSTER_NAME" --zone "$CLUSTER_ZONE" --project "$CLOUD_PROJECT"
-  
+
+.deploy-filter: &deploy_filter
+  only:
+    - master
+    - development
+    - feature-*  
 
 build-make:
   stage: build
@@ -52,9 +57,10 @@ test:
     
 build-n-publish-image:
   <<: *builder_setup
+  <<: *deploy_filter
+
   stage: push-artifacts
-  only:
-    - master
+
   script:
     - docker build --pull --cache-from $IMAGE_REPO:latest -t $IMAGE_REPO:latest -t $IMAGE_REPO:$CI_BUILD_REF .
     - docker push $IMAGE_REPO:latest 
@@ -90,6 +96,8 @@ deploy-prod:
 
 builder-image:
   stage: build
+  only:
+    - master
   when: manual
   script: 
     - echo "$GCLOUD_SERVICE_KEY" | base64 -d > /gcloud-service-key.json
