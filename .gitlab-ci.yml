@@ -122,8 +122,8 @@ deploy-prod:
 #    - sed -i "s#IMAGE_TAG#$IMAGE_REPO:$IMAGE_TAG#" k8s/kuard-prod.yaml
 #    - cat k8s/kuard-prod.yaml
 #    - kubectl apply -f k8s/kuard-prod.yaml
-     - set -x
-     - |
+    - set -x
+    - |
        helm upgrade --install --force --debug $RELEASE_NAME \
          --set replicas=5 \
          --set image.repository="$IMAGE_REPO" \
