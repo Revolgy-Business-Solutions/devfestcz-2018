@@ -3,6 +3,7 @@ image: docker:stable
 stages:
     - build
     - test
+    - push-artifacts
     - deploy
 
 variables:
@@ -13,8 +14,8 @@ variables:
   CLUSTER_NAME: devfest
   CLUSTER_ZONE: europe-west3-c
 
-#services:
-#  - docker:dind
+services:
+  - docker:dind
 
 build-make:
   stage: build
@@ -23,7 +24,7 @@ build-make:
     - make build 
 
 build-image:
-  stage: build
+  stage: push-artifacts
   only:
     - master
   script: 
