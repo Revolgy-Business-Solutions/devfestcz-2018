@@ -7,24 +7,17 @@ metadata:
     # Add to generate certificates for this ingress
     kubernetes.io/tls-acme: 'true'
   name: nginx
+  namespace: development
 spec:
   rules:
-    - host: kuard.marekbartik.com
+    - host: kuard-dev.marekbartik.com
       http:
         paths:
           - backend:
               serviceName: kuard
               servicePort: 80
             path: /
-    - host: kuard-canary.marekbartik.com
-      http:
-        paths:
-          - backend:
-              serviceName: kuard-canary
-              servicePort: 80
-            path: /
   tls:
     - hosts:
-        - "kuard.marekbartik.com"
-        - "kuard-canary.marekbartik.com"
+        - "kuard-dev.marekbartik.com"
       secretName: example-tls
