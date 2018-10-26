@@ -6,6 +6,7 @@ stages:
     - push-artifacts
     - deploy-canary
     - deploy-prod
+    - deploy-review
 
 variables:
   # When using dind, it's wise to use the overlayfs driver for improved performance.
