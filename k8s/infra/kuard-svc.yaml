@@ -19,7 +19,7 @@ kind: Service
 metadata:
   labels:
     app: kuard
-    track: prod
+    track: stable
   name: kuard-prod
 spec:
   ports:
@@ -28,7 +28,7 @@ spec:
     targetPort: 8080
   selector:
     app: kuard
-    track: prod
+    track: stable
   sessionAffinity: None
   type: ClusterIP
 ---

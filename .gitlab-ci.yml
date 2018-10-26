@@ -83,10 +83,19 @@ deploy-canary:
   only:
     - master
   <<: *builder_setup
+  variables:
+    RELEASE_NAME: $APP_NAME-canary
   script:
-    - sed -i "s#IMAGE_TAG#$IMAGE_REPO:$IMAGE_TAG#" k8s/kuard-canary.yaml
-    - cat k8s/kuard-canary.yaml
-    - kubectl apply -f k8s/kuard-canary.yaml
+#    - sed -i "s#IMAGE_TAG#$IMAGE_REPO:$IMAGE_TAG#" k8s/kuard-canary.yaml
+#    - cat k8s/kuard-canary.yaml
+#    - kubectl apply -f k8s/kuard-canary.yaml
+    - |
+       helm upgrade --install --force --debug $RELEASE_NAME \
+         --set replicas=1 \
+         --set image.repository="$IMAGE_REPO" \
+         --set image.tag="$IMAGE_TAG" \
+         ./helm/
+    - time kubectl rollout status deployment/$RELEASE_NAME
 
 destroy-canary:
   stage: deploy-canary
@@ -94,8 +103,11 @@ destroy-canary:
   only:
     - master
   <<: *builder_setup
+  variables:
+    RELEASE_NAME: $APP_NAME-canary
   script:
-    - kubectl delete -f k8s/kuard-canary.yaml
+#    - kubectl delete -f k8s/kuard-canary.yaml
+    - helm del --purge $RELEASE_NAME
 
 deploy-prod:
   stage: deploy-prod
@@ -103,10 +115,19 @@ deploy-prod:
   only:
     - master
   <<: *builder_setup
+  variables:
+    RELEASE_NAME: $APP_NAME-prod
   script:
-    - sed -i "s#IMAGE_TAG#$IMAGE_REPO:$IMAGE_TAG#" k8s/kuard-prod.yaml
-    - cat k8s/kuard-prod.yaml
-    - kubectl apply -f k8s/kuard-prod.yaml
+#    - sed -i "s#IMAGE_TAG#$IMAGE_REPO:$IMAGE_TAG#" k8s/kuard-prod.yaml
+#    - cat k8s/kuard-prod.yaml
+#    - kubectl apply -f k8s/kuard-prod.yaml
+    - |
+       helm upgrade --install --force --debug $RELEASE_NAME \
+         --set replicas=5 \
+         --set image.repository="$IMAGE_REPO" \
+         --set image.tag="$IMAGE_TAG" \
+         ./helm/
+    - time kubectl rollout status deployment/$RELEASE_NAME
 
 review-deploy:
   stage: deploy-review
@@ -118,10 +139,20 @@ review-deploy:
     url: https://$REVIEW_URL
   variables:
     NAMESPACE: $CI_COMMIT_REF_SLUG
+    RELEASE_NAME: $APP_NAME-$CI_COMMIT_REF_SLUG
   script: 
-    - sed -i "s#IMAGE_TAG#$IMAGE_REPO:$IMAGE_TAG#" k8s/kuard-prod.yaml
+#    - sed -i "s#IMAGE_TAG#$IMAGE_REPO:$IMAGE_TAG#" k8s/kuard-prod.yaml
     - kubectl create namespace "$NAMESPACE" || echo "namespace already exists"
-    - kubectl apply -n "$NAMESPACE" -f k8s/kuard-prod.yaml
+#    - kubectl apply -n "$NAMESPACE" -f k8s/kuard-prod.yaml
+    - |
+       helm upgrade --install --force --namespace $NAMESPACE --debug $RELEASE_NAME \
+         --set replicas=1 \
+         --set image.repository="$IMAGE_REPO" \
+         --set image.tag="$IMAGE_TAG" \
+         --set namespace=$NAMESPACE
+         ./helm/
+    - time kubectl rollout status -n $NAMESPACE deployment/$RELEASE_NAME
+
 
 review-destroy:
   stage: deploy-review
@@ -133,7 +164,9 @@ review-destroy:
     url: https://$REVIEW_URL
   variables:
     NAMESPACE: $CI_COMMIT_REF_SLUG
+    RELEASE_NAME: $APP_NAME-$CI_COMMIT_REF_SLUG
   script:
+    - helm del --purge $RELEASE_NAME
     - kubectl delete namespace "$NAMESPACE"
 
 builder-image:

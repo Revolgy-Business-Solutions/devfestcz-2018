@@ -14,12 +14,12 @@ spec:
   selector:
     matchLabels:
       app: kuard
-      track: prod
+      track: stable
   template:
     metadata:
       labels:
         app: kuard
-        track: prod
+        track: stable
     spec:
       containers:
       - image: IMAGE_TAG
