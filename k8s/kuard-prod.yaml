@@ -22,7 +22,7 @@ spec:
         track: prod
     spec:
       containers:
-      - image: eu.gcr.io/mab-testing/kuard/kuard-amd64:1
+      - image: IMAGE_TAG
         imagePullPolicy: Always
         name: kuard
         resources:
