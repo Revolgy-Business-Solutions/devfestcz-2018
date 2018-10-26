@@ -39,13 +39,20 @@ test:
     - echo "all ok"
     
 build-n-publish-image:
+  before_script:
+   - apk add --update make ca-certificates openssl python curl bash tree git jq update-ca-certificates
+   - | 
+      cd / && wget https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz && \
+      tar zxvf google-cloud-sdk.tar.gz && \
+      ./google-cloud-sdk/install.sh --usage-reporting=false --path-update=true
+
   stage: push-artifacts
   only:
     - master
   script: 
     # Write our GCP service account private key into a file.
     - echo "$GCLOUD_SERVICE_KEY" | base64 -d > ./gcloud-service-key.json
-    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+    - /google-cloud/sdk/bin/gcloud auth configure-docker
     - docker build --pull --cache-from $IMAGE_REPO:latest -t $IMAGE_REPO:latest -t $IMAGE_REPO:$CI_BUILD_REF .
     - docker push $IMAGE_REPO:latest 
     - docker push $IMAGE_REPO:$CI_BUILD_REF

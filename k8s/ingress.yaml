@@ -2,7 +2,7 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   annotations:
-    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.class: "nginx-ingress"
     external-dns.alpha.kubernetes.io/hostname: gke-ingress.marekbartik.com
     kubernetes.io/ingress.global-static-ip-name: "gke-ingress"
     # Add to generate certificates for this ingress
