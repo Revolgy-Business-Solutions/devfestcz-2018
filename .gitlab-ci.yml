@@ -152,7 +152,7 @@ review-deploy:
          --set replicas=1 \
          --set image.repository="$IMAGE_REPO" \
          --set image.tag="$IMAGE_TAG" \
-         --set namespace=$NAMESPACE
+         --set namespace=$NAMESPACE \
          ./helm/
     - time kubectl rollout status -n $NAMESPACE deployment/$RELEASE_NAME
 
