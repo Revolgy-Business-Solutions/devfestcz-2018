@@ -11,15 +11,7 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   rules:
-{{ if ! .Values.namespace eq "default" }}
-    - host: kuard-{{ .Values.namespace }}.marekbartik.com
-      http:
-        paths:
-          - backend:
-              serviceName: kuard
-              servicePort: 80
-            path: /
-{{ else }}
+{{ if eq .Values.namespace "default" }}
     - host: kuard.marekbartik.com
       http:
         paths:
@@ -33,15 +25,23 @@ spec:
           - backend:
               serviceName: kuard-canary
               servicePort: 80
+            path: / 
+{{ else }}
+    - host: kuard-{{ .Values.namespace }}.marekbartik.com
+      http:
+        paths:
+          - backend:
+              serviceName: kuard
+              servicePort: 80
             path: /
 {{ end }}
   tls:
     - hosts:
-{{ if ! .Values.namespace eq "default" }}
-        - "kuard-{{ .Values.namespace }}.marekbartik.com"
-{{ else }}
+{{ if eq .Values.namespace  "default" }}
         - "kuard.marekbartik.com"
         - "kuard-canary.marekbartik.com"
+{{ else }}
+        - "kuard-{{ .Values.namespace }}.marekbartik.com"
 {{ end }}
       secretName: example-tls
 {{- end }}
