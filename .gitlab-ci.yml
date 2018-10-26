@@ -40,8 +40,9 @@ services:
     - feature-*  
 
 .review-filter: &review_filter
-    except:
-        - master
+  only:
+    - development
+    - feature-*
 
 build-make:
   stage: build
@@ -104,10 +105,10 @@ review-deploy:
   stage: deploy-review
   when: manual
   <<: *review_filter 
+  <<: *builder_setup
   environment:
     name: stage-$CI_COMMIT_REF_SLUG
     url: https://$REVIEW_URL
-  <<: *builder_setup
   variables:
     NAMESPACE: $CI_COMMIT_REF_SLUG
   script: 
@@ -119,10 +120,10 @@ review-destroy:
   stage: deploy-review
   when: manual
   <<: *review_filter
+  <<: *builder_setup
   environment:
     name: stage-$CI_COMMIT_REF_SLUG
     url: https://$REVIEW_URL
-  <<: *builder_setup
   variables:
     NAMESPACE: $CI_COMMIT_REF_SLUG
   script:
