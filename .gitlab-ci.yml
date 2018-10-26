@@ -20,7 +20,7 @@ services:
 build-make:
   stage: build
   before_script: 
-    - apk --update add build-essential
+    - apk add --update alpine-sdk
   script:
     - cd kuard
     - make build 
