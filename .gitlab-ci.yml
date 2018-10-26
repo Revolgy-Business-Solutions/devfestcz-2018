@@ -84,6 +84,7 @@ deploy-canary:
   <<: *builder_setup
   script:
     - sed -i "s#IMAGE_TAG#$IMAGE_REPO:$IMAGE_TAG#" k8s/kuard-canary.yaml
+    - cat k8s/kuard-canary.yaml
     - kubectl apply -f k8s/kuard-canary.yaml
 
 destroy-canary:
@@ -103,6 +104,7 @@ deploy-prod:
   <<: *builder_setup
   script:
     - sed -i "s#IMAGE_TAG#$IMAGE_REPO:$IMAGE_TAG#" k8s/kuard-prod.yaml
+    - cat k8s/kuard-prod.yaml
     - kubectl apply -f k8s/kuard-prod.yaml
 
 review-deploy:
