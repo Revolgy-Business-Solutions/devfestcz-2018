@@ -50,7 +50,11 @@ build-make:
     - apk add --update alpine-sdk
   script:
     - cd kuard
-    - time make build 
+    # - time make build 
+    # fake the build to make this faster
+    - sleep 15
+    - cp -pr fakebin/ bin/ 
+
   artifacts:
    paths:
     - kuard/bin/
