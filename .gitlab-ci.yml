@@ -4,7 +4,8 @@ stages:
     - build
     - test
     - push-artifacts
-    - deploy
+    - deploy-canary
+    - deploy-prod
 
 variables:
   # When using dind, it's wise to use the overlayfs driver for improved performance.
@@ -45,7 +46,7 @@ build-n-publish-image:
     - master
   before_script: 
     # Write our GCP service account private key into a file.
-    - echo "$GCLOUD_SERVICE_KEY" | base64 -d > ./gcloud-service-key.json
+    - echo "$GCLOUD_SERVICE_KEY" | base64 -d > /gcloud-service-key.json
     - gcloud auth activate-service-account --key-file /gcloud-service-key.json 
     - gcloud auth configure-docker
     - gcloud container clusters get-credentials "$CLUSTER_NAME" --zone "$CLUSTER_ZONE" --project "$CLOUD_PROJECT"
@@ -54,12 +55,36 @@ build-n-publish-image:
     - docker push $IMAGE_REPO:latest 
     - docker push $IMAGE_REPO:$CI_BUILD_REF
 
-deploy-manifests:
-  stage: deploy
+deploy-canary:
+  stage: deploy-canary
   only:
     - master
   before_script:
-    - echo "$GCLOUD_SERVICE_KEY" | base64 -d > ./gcloud-service-key.json
+    - echo "$GCLOUD_SERVICE_KEY" | base64 -d > /gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file /gcloud-service-key.json
+    - gcloud auth configure-docker
+    - gcloud container clusters get-credentials "$CLUSTER_NAME" --zone "$CLUSTER_ZONE" --project "$CLOUD_PROJECT"
+  script:
+    - kubectl apply -f k8s/
+
+destroy-canary:
+  stage: deploy-canary
+  only:
+    - master
+  before_script:
+    - echo "$GCLOUD_SERVICE_KEY" | base64 -d > /gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file /gcloud-service-key.json
+    - gcloud auth configure-docker
+    - gcloud container clusters get-credentials "$CLUSTER_NAME" --zone "$CLUSTER_ZONE" --project "$CLOUD_PROJECT"
+  script:
+    - kubectl apply -f k8s/
+
+deploy-prod:
+  stage: deploy-prod
+  only:
+    - master
+  before_script:
+    - echo "$GCLOUD_SERVICE_KEY" | base64 -d > /gcloud-service-key.json
     - gcloud auth activate-service-account --key-file /gcloud-service-key.json
     - gcloud auth configure-docker
     - gcloud container clusters get-credentials "$CLUSTER_NAME" --zone "$CLUSTER_ZONE" --project "$CLOUD_PROJECT"
@@ -70,7 +95,7 @@ builder-image:
   stage: build
   when: manual
   script: 
-    - echo "$GCLOUD_SERVICE_KEY" | base64 -d > ./gcloud-service-key.json
+    - echo "$GCLOUD_SERVICE_KEY" | base64 -d > /gcloud-service-key.json
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     - docker build --pull --cache-from $CI_REGISTRY_IMAGE:latest -f  pipeline-builder/Dockerfile -t $CI_REGISTRY_IMAGE:$CI_BUILD_REF -t $CI_REGISTRY_IMAGE:latest .
     - docker push $CI_REGISTRY_IMAGE
