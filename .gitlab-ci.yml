@@ -20,6 +20,17 @@ variables:
 
 services:
   - docker:dind
+  
+.setup-builder: &builder_setup
+  image: $CI_REGISTRY_IMAGE:latest
+
+  before_script: 
+    # Write our GCP service account private key into a file.
+    - echo "$GCLOUD_SERVICE_KEY" | base64 -d > /gcloud-service-key.json
+    - gcloud auth activate-service-account --key-file /gcloud-service-key.json 
+    - gcloud auth configure-docker
+    - gcloud container clusters get-credentials "$CLUSTER_NAME" --zone "$CLUSTER_ZONE" --project "$CLOUD_PROJECT"
+  
 
 build-make:
   stage: build
@@ -40,16 +51,10 @@ test:
     - echo "all ok"
     
 build-n-publish-image:
-  image: $CI_REGISTRY_IMAGE:latest
+  <<: *builder_setup
   stage: push-artifacts
   only:
     - master
-  before_script: 
-    # Write our GCP service account private key into a file.
-    - echo "$GCLOUD_SERVICE_KEY" | base64 -d > /gcloud-service-key.json
-    - gcloud auth activate-service-account --key-file /gcloud-service-key.json 
-    - gcloud auth configure-docker
-    - gcloud container clusters get-credentials "$CLUSTER_NAME" --zone "$CLUSTER_ZONE" --project "$CLOUD_PROJECT"
   script:
     - docker build --pull --cache-from $IMAGE_REPO:latest -t $IMAGE_REPO:latest -t $IMAGE_REPO:$CI_BUILD_REF .
     - docker push $IMAGE_REPO:latest 
@@ -59,37 +64,25 @@ deploy-canary:
   stage: deploy-canary
   only:
     - master
-  before_script:
-    - echo "$GCLOUD_SERVICE_KEY" | base64 -d > /gcloud-service-key.json
-    - gcloud auth activate-service-account --key-file /gcloud-service-key.json
-    - gcloud auth configure-docker
-    - gcloud container clusters get-credentials "$CLUSTER_NAME" --zone "$CLUSTER_ZONE" --project "$CLOUD_PROJECT"
+  <<: *builder_setup
   script:
-    - kubectl apply -f k8s/
+    - kubectl apply -f k8s/kuard-canary.yaml
 
 destroy-canary:
   stage: deploy-canary
   only:
     - master
-  before_script:
-    - echo "$GCLOUD_SERVICE_KEY" | base64 -d > /gcloud-service-key.json
-    - gcloud auth activate-service-account --key-file /gcloud-service-key.json
-    - gcloud auth configure-docker
-    - gcloud container clusters get-credentials "$CLUSTER_NAME" --zone "$CLUSTER_ZONE" --project "$CLOUD_PROJECT"
+  <<: *builder_setup
   script:
-    - kubectl apply -f k8s/
+    - kubectl delete -f k8s/kuard-canary.yaml
 
 deploy-prod:
   stage: deploy-prod
   only:
     - master
-  before_script:
-    - echo "$GCLOUD_SERVICE_KEY" | base64 -d > /gcloud-service-key.json
-    - gcloud auth activate-service-account --key-file /gcloud-service-key.json
-    - gcloud auth configure-docker
-    - gcloud container clusters get-credentials "$CLUSTER_NAME" --zone "$CLUSTER_ZONE" --project "$CLOUD_PROJECT"
+  <<: *builder_setup
   script:
-    - kubectl apply -f k8s/
+    - kubectl apply -f k8s/kuard-prod.yaml
 
 builder-image:
   stage: build
@@ -99,4 +92,12 @@ builder-image:
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     - docker build --pull --cache-from $CI_REGISTRY_IMAGE:latest -f  pipeline-builder/Dockerfile -t $CI_REGISTRY_IMAGE:$CI_BUILD_REF -t $CI_REGISTRY_IMAGE:latest .
     - docker push $CI_REGISTRY_IMAGE
-
+    
+k8s-infra:
+  stage: build
+  when: manual
+  only:
+    - master
+  <<: *builder_setup
+  script:
+    - kubectl apply -f k8s/infra/
