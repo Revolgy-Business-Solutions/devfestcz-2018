@@ -19,6 +19,9 @@ services:
 
 build-make:
   stage: build
+  before_script: 
+    - apt-get update
+    - apt-get install -y build-essential
   script:
     - cd kuard
     - make build 
