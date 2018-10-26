@@ -27,6 +27,10 @@ build-make:
   script:
     - cd kuard
     - time make build 
+  artifacts:
+   paths:
+    - kuard/bin/
+
 
 test:
   stage: test
@@ -34,7 +38,7 @@ test:
     # TODO: add tests lol
     - echo "all ok"
     
-build-image:
+build-n-publish-image:
   stage: push-artifacts
   only:
     - master
