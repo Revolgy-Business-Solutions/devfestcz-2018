@@ -19,7 +19,7 @@ variables:
   CLUSTER_ZONE: europe-west3-c
   IMAGE_REPO: eu.gcr.io/${CLOUD_PROJECT}/${PROJECT_NAME}/${APP_NAME}
   IMAGE_TAG: "$CI_COMMIT_REF_SLUG.$CI_COMMIT_SHA"
-  REVIEW_URL: "https://${APP_NAME}${CI_COMMIT_REF_SLUG}.marekbartik.com"
+  REVIEW_URL: "https://$APP_NAME-$CI_COMMIT_REF_SLUG.marekbartik.com"
 
 services:
   - docker:dind
