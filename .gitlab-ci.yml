@@ -113,7 +113,7 @@ review-deploy:
     NAMESPACE: $CI_COMMIT_REF_SLUG
   script: 
     - sed -i "s#IMAGE_TAG#$IMAGE_REPO:$IMAGE_TAG#" k8s/kuard-prod.yaml
-    - kubectl create namespace "$NAMESPACE"
+    - kubectl create namespace "$NAMESPACE" || echo "namespace already exists"
     - kubectl apply -n "$NAMESPACE" -f k8s/kuard-prod.yaml
 
 review-destroy:
