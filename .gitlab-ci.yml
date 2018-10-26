@@ -42,7 +42,7 @@ services:
 .review-filter: &review_filter
   only:
     - development
-    - /^feature-*$/
+    - /^feature-.*$/
 
 build-make:
   stage: build
