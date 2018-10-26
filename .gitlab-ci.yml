@@ -69,9 +69,9 @@ build-n-publish-image:
   stage: push-artifacts
 
   script:
-    - docker build --pull --cache-from $IMAGE_REPO:latest -t $IMAGE_REPO:latest -t $IMAGE_REPO:$CI_BUILD_REF .
-    - docker push $IMAGE_REPO:latest 
-    - docker push $IMAGE_REPO:$CI_BUILD_REF
+    - docker build --pull --cache-from $IMAGE_REPO:latest -t "$IMAGE_REPO":latest -t "$IMAGE_REPO:$IMAGE_TAG" .
+    - docker push "$IMAGE_REPO":latest 
+    - docker push "$IMAGE_REPO:$IMAGE_TAG"
 
 deploy-canary:
   stage: deploy-canary
