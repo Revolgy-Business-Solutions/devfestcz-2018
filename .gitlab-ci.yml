@@ -188,3 +188,4 @@ k8s-infra:
   <<: *builder_setup
   script:
     - kubectl apply -f k8s/infra/
+    - helm init --service-account tiller  --debug --upgrade
