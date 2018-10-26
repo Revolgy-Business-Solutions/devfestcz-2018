@@ -17,6 +17,7 @@ variables:
   CLUSTER_NAME: devfest
   CLUSTER_ZONE: europe-west3-c
   IMAGE_REPO: eu.gcr.io/${CLOUD_PROJECT}/${PROJECT_NAME}/${APP_NAME}
+  IMAGE_TAG: $CI_COMMIT_REF_SLUG.${CI_COMMIT_SHA:0:8} 
 
 services:
   - docker:dind
@@ -36,6 +37,10 @@ services:
     - master
     - development
     - feature-*  
+
+.review-filter: &review_filter
+    except:
+        - master
 
 build-make:
   stage: build
@@ -72,7 +77,7 @@ deploy-canary:
     - master
   <<: *builder_setup
   script:
-    - sed -i "s#IMAGE_TAG#$IMAGE_REPO:$CI_BUILD_REF#" k8s/kuard-canary.yaml
+    - sed -i "s#IMAGE_TAG#$IMAGE_REPO:$IMAGE_TAG#" k8s/kuard-canary.yaml
     - kubectl apply -f k8s/kuard-canary.yaml
 
 destroy-canary:
@@ -91,8 +96,36 @@ deploy-prod:
     - master
   <<: *builder_setup
   script:
-    - sed -i "s#IMAGE_TAG#$IMAGE_REPO:$CI_BUILD_REF#" k8s/kuard-prod.yaml
+    - sed -i "s#IMAGE_TAG#$IMAGE_REPO:$IMAGE_TAG#" k8s/kuard-prod.yaml
     - kubectl apply -f k8s/kuard-prod.yaml
+
+review-deploy:
+  stage: deploy-review
+  when: manual
+  <<: *review_filter 
+  environment:
+    name: stage-$CI_COMMIT_REF_SLUG
+    url: https://$REVIEW_URL
+  <<: *builder_setup
+  variables:
+    NAMESPACE: $CI_COMMIT_REF_SLUG
+  script: 
+    - sed -i "s#IMAGE_TAG#$IMAGE_REPO:$IMAGE_TAG#" k8s/kuard-prod.yaml
+    - kubectl create namespace "$NAMESPACE"
+    - kubectl apply -n "$NAMESPACE" -f k8s/kuard-prod.yaml
+
+review-destroy:
+  stage: deploy-review
+  when: manual
+  <<: *review_filter
+  environment:
+    name: stage-$CI_COMMIT_REF_SLUG
+    url: https://$REVIEW_URL
+  <<: *builder_setup
+  variables:
+    NAMESPACE: $CI_COMMIT_REF_SLUG
+  script:
+    - kubectl delete namespace "$NAMESPACE"
 
 builder-image:
   stage: build
