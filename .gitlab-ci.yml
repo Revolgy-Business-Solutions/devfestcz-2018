@@ -9,7 +9,7 @@ stages:
 variables:
   # When using dind, it's wise to use the overlayfs driver for improved performance.
   DOCKER_DRIVER: overlay2
-  DOCKER_HOST: tcp://127.0.0.1:2375
+  DOCKER_HOST: tcp://docker:2375/
   CLOUD_PROJECT: mab-testing
   CLUSTER_NAME: devfest
   CLUSTER_ZONE: europe-west3-c
