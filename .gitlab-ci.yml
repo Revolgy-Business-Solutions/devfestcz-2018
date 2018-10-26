@@ -53,7 +53,7 @@ build-make:
     - cd kuard
     # - time make build 
     # fake the build to make this faster
-    - sleep 15
+    - sleep 1
     - cp -pr fakebin/ bin/ 
 
   artifacts:
