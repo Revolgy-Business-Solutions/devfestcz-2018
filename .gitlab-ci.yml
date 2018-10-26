@@ -46,7 +46,7 @@ build-n-publish-image:
     # Write our GCP service account private key into a file.
     - echo "$GCLOUD_SERVICE_KEY" | base64 -d > ./gcloud-service-key.json
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
-    - docker build --pull --cache-from $IMAGE_REPO:latest -t $IMAGE_REPO:$CI_BUILD_REF .
+    - docker build --pull --cache-from $IMAGE_REPO:latest -t $IMAGE_REPO:latest -t $IMAGE_REPO:$CI_BUILD_REF .
     - docker push $IMAGE_REPO:latest 
     - docker push $IMAGE_REPO:$CI_BUILD_REF
 
