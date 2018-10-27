@@ -4,7 +4,6 @@ kind: Ingress
 metadata:
   annotations:
     kubernetes.io/ingress.class: "nginx"
-#    external-dns.alpha.kubernetes.io/hostname: gke-ingress.marekbartik.com
     # Add to generate certificates for this ingress
     kubernetes.io/tls-acme: 'true'
   name: nginx
