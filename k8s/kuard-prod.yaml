@@ -27,7 +27,7 @@ spec:
         name: kuard
         resources:
           requests:
-            cpu: "50m"
+            cpu: "60m"
             memory: "32Mi"
           limits:
             cpu: "1000m"
